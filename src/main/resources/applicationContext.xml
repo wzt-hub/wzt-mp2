@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<!-- 加载db.properties配置文件 -->
+	<context:property-placeholder location="classpath:db.properties"/>
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driver}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<!-- 配置事务管理器 -->
+	<bean id="dataSourceTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 基于注解的事务管理 -->
+	<tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+	
+	<!-- 配置 SqlSessionFactoryBean
+		Mybatis提供：org.mybatis.spring.SqlSessionFactoryBean
+		MybatisPlus提供：com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean
+	 -->
+	<!-- 集成Mybatis-Plus仅需将mybatis提供的SqlSessionFactoryBean替换为MybatisPlus提供的MybatisSqlSessionFactoryBean -->
+	<bean id="sqlSessionFactoryBean" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	
+	    <!-- 别名处理 别名处理 -->
+		<property name="typeAliasesPackage" value="com.mp.beans"></property>
+	</bean>
+
+	<!-- 配置 mybatis 扫描 mapper接口的路径 接口的路径 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.mp.mapper"></property>
+	</bean>
+	
+</beans>
