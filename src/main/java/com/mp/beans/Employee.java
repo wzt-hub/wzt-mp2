@@ -1,5 +1,8 @@
 package com.mp.beans;
 
+import java.util.Date;
+
+import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.enums.IdType;
@@ -33,7 +36,18 @@ public class Employee {
 	private Integer gender ;
 	private Integer age ;
 	
+	//不是数据表中的字段
+	@TableField(exist=false)
+	private Date time;
 	
+	
+	
+	public Date getTime() {
+		return time;
+	}
+	public void setTime(Date time) {
+		this.time = time;
+	}
 	public Integer getId() {
 		return id;
 	}
