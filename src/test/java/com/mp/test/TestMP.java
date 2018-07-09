@@ -12,10 +12,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.RowBounds;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.mp.beans.Employee;
 import com.mp.mapper.EmployeeMapper;
 
@@ -24,6 +27,61 @@ class TestMP {
 			new ClassPathXmlApplicationContext("applicationContext.xml");
 	
 	private EmployeeMapper employeeMapper=ioc.getBean(EmployeeMapper.class);
+	
+	/**
+	 *  测试通用的删除操作：根据ID 批量删除
+	 *  Integer deleteBatchIds(@Param("coll") Collection<? extends Serializable> idList);
+	 */
+	@Test
+	public void testDeleteBatchIds() {
+		List<Integer> idList=new ArrayList<>();
+		idList.add(18);
+		idList.add(19);
+		Integer result = employeeMapper.deleteBatchIds(idList);
+		System.out.println(result);
+	}
+	
+	/**
+	 *  测试通用的删除操作：根据 columnMap 条件，删除记录
+	 *  Integer deleteByMap(@Param("cm") Map<String, Object> columnMap);
+	 * 执行发送的SQL语句：DELETE FROM tbl_employee WHERE last_name = ? AND email = ?
+	 */
+	@Test
+	public void testDeleteByMap() {
+		Map<String,Object> columnMap=new HashMap<>();
+		columnMap.put("last_name", "MP-dec");
+		columnMap.put("email", "2444@qq.com");
+		Integer result = employeeMapper.deleteByMap(columnMap);
+		System.out.println(result);
+	}
+	
+	/**
+	 *  测试通用的删除操作：根据 ID 删除
+	 *  Integer deleteById(Serializable id);
+	 */
+	@Test
+	public void testDeleteById() {
+		Integer result = employeeMapper.deleteById(19);
+		System.out.println(result);
+	}
+	
+	/**
+	 *  测试通用的查询：分页查询
+	 *  List<T> selectPage(RowBounds rowBounds, @Param("ew") Wrapper<T> wrapper);
+	 *    rowBounds 分页查询条件（可以为 RowBounds.DEFAULT）
+	 *    wrapper   实体对象封装操作类（可以为 null）
+	 *  发送的SQL语句为：SELECT id,last_name AS lastName,email,gender,age FROM tbl_employee
+	 *  由发送的SQL语句可知：SQL语句上并没有采用limit关键字进行分页，而是查询所有记录数，底层使用Mybatis RowBounds 进行内存分页
+	 *  如果要使用真正的物理分页必须借助分页插件实现
+	 */
+	@Test
+	public void testSelectPage() {
+		//Page  参数1：当前页码数     参数2：每页显示记录数
+		List<Employee> emps = employeeMapper.selectPage(new Page<>(2,2), null);
+		for(Employee emp:emps) {
+			System.out.println(emp);
+		}
+	}
 	
 	/**
 	 *  测试通用的查询：根据 Map集合封装条件查询

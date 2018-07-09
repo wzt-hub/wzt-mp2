@@ -40,8 +40,6 @@ public class Employee {
 	@TableField(exist=false)
 	private Date time;
 	
-	
-	
 	public Date getTime() {
 		return time;
 	}
