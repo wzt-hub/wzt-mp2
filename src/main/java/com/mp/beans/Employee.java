@@ -1,12 +1,17 @@
 package com.mp.beans;
 
+import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.activerecord.Model;
 import com.baomidou.mybatisplus.annotations.TableField;
 
- 
-public class Employee {
-	
+/**
+ * 使用 AR模
+ */
+public class Employee extends Model<Employee>{
+
+	private static final long serialVersionUID = 1L;
 	private Integer id ;
 	private String lastName;
 	private String email ;
@@ -58,5 +63,13 @@ public class Employee {
 	public String toString() {
 		return "Employee [id=" + id + ", lastName=" + lastName + ", email=" + email + ", gender=" + gender + ", age="
 				+ age + "]";
+	}
+	
+	/**
+	 * 指定当前实体类的主键属性
+	 */
+	@Override
+	protected Serializable pkVal() {
+		return id;
 	}
 }
