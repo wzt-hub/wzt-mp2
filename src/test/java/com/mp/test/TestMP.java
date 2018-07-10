@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.baomidou.mybatisplus.mapper.Condition;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.mp.beans.Employee;
@@ -27,6 +30,116 @@ class TestMP {
 			new ClassPathXmlApplicationContext("applicationContext.xml");
 	
 	private EmployeeMapper employeeMapper=ioc.getBean(EmployeeMapper.class);
+	
+	/**
+	 * 条件构造器  查询操作
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testConditionSelect() {
+		/**
+		 * 1.分页查询tbl_employee表中，年龄18-50之间性别为女(0)且姓名为White的所有用户
+		 * 	 List<T> selectPage(RowBounds rowBounds, @Param("ew") Wrapper<T> wrapper);
+		 */
+		List<Employee> emps = employeeMapper.selectPage(new Page<Employee>(1,2),
+				Condition.create()   //创建Condition对象
+				.between("age", 18, 50)
+				.eq("gender", 0)
+				.eq("last_name", "White")
+			);
+		for(Employee emp:emps) {
+			System.out.println(emp);
+		}
+	}
+	
+	/**
+	 * 条件构造器  删除操作
+	 * Integer delete(@Param("ew") Wrapper<T> wrapper);
+	 * 执行的SQL语句：DELETE FROM tbl_employee WHERE (last_name = ? AND age = ?)
+	 */
+	@Test
+	public void testEntityWrapperDelete() {
+		Integer result = employeeMapper.delete(new EntityWrapper<Employee>()
+				.eq("last_name", "White")
+				.eq("age", 45));
+		System.out.println(result);
+	}
+	
+	/**
+	 * 条件构造器  修改操作
+	 * Integer update(@Param("et") T entity, @Param("ew") Wrapper<T> wrapper);
+	 * 执行的SQL语句：UPDATE tbl_employee SET last_name=?, email=?, gender=? WHERE (last_name = ? AND age = ?)
+	 */
+	@Test
+	public void testEntityWrapperUpdate() {
+		//1.封装修改的内容
+		Employee emp=new Employee();
+		emp.setLastName("wzt");
+		emp.setGender(1);
+		emp.setEmail("wzt@qq.com");
+		//2.封装修改条件
+		EntityWrapper<Employee> wrapper=new EntityWrapper<>();
+		wrapper.eq("last_name", "White");
+		wrapper.eq("age", 45);
+		//3.执行修改
+		Integer result = employeeMapper.update(emp, wrapper);
+		System.out.println(result);
+	}
+	
+	/**
+	 * 条件构造器  查询操作
+	 */
+	@Test
+	public void testEntityWrapperSelect() {
+		/**
+		 * 1.分页查询tbl_employee表中，年龄18-50之间性别为女(0)且姓名为White的所有用户
+		 * 	 List<T> selectPage(RowBounds rowBounds, @Param("ew") Wrapper<T> wrapper);
+		 */
+		/*List<Employee> emps = employeeMapper.selectPage(new Page<Employee>(1,2),new EntityWrapper<Employee>()
+				.between("age", 18, 50)
+				.eq("gender", 0)
+				.eq("last_name", "White"));
+		for(Employee emp:emps) {
+			System.out.println(emp);
+		}*/
+		
+		
+		/**
+		 * 2.查询tbl_employee表中，性别为女，并且邮箱中带有"atguigu"或者名字中带有"te"
+		 * 	  List<T> selectList(@Param("ew") Wrapper<T> wrapper);
+		 * 	
+		 * 	使用or()方法发送的sql语句形式为：...(gender = ? AND email LIKE ? OR last_name LIKE ?)
+		 * 	使用orNew()方法发送的sql语句形式为：...(gender = ? AND email LIKE ?) OR (last_name LIKE ?)     
+		 */
+		/*List<Employee> emps = employeeMapper.selectList(new EntityWrapper<Employee>()
+				.eq("gender", 0)
+				.like("email", "atguigu")
+				//.or()
+				.orNew()
+				.like("last_name", "te"));
+		for(Employee emp:emps) {
+			System.out.println(emp);
+		}*/
+		/**
+		 * 3.查询tbl_employee表中，性别为女，根据age排序,简单分页
+		 */
+		List<Employee> emps = employeeMapper.selectList(new EntityWrapper<Employee>()
+				.eq("gender", 0)
+				//.orderBy("age")     //默认升序排列
+				//.orderBy("age", false)   //实现降序方法1
+				//.orderDesc(Arrays.asList(new String[] {"age"}))  //实现降序方法2
+				
+				/**
+				 * 手动把sql拼接到最后(有sql注入的风险,请谨慎使用)
+				 * public Wrapper<T> last(String limit)
+				 */
+				//.orderBy("age").last("desc")
+				.orderBy("age").last("desc limit 0,2")  //实现分页
+			); 
+		for(Employee emp:emps) {
+			System.out.println(emp);
+		}
+	}
 	
 	/**
 	 *  测试通用的删除操作：根据ID 批量删除
